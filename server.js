@@ -103,9 +103,15 @@ app.post("/upload", upload.array("file"), (req, res) => {
 });
 
 // --- Server Start ---
-app.listen(port, () => {
-  console.log(
-    `Server is running on http://localhost:${port}\n` +
-      `Please open your browser and navigate to this address.`
-  );
-});
+// Export the app for Vercel serverless functions
+module.exports = app;
+
+// Only start the server if running locally (not imported as a module)
+if (require.main === module) {
+  app.listen(port, () => {
+    console.log(
+      `Server is running on http://localhost:${port}\n` +
+        `Please open your browser and navigate to this address.`
+    );
+  });
+}
