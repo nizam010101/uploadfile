@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 
 // Import parsers
 const { parseShopee } = require("./parsers/shopeeParser");
@@ -9,14 +10,16 @@ const { parseLazada } = require("./parsers/lazadaParser");
 const { parseTiktok } = require("./parsers/tiktokParser");
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // --- Multer Setup for File Uploads ---
-// Use /tmp on Vercel (read-only filesystem), and local 'uploads' folder on Windows/Local
-const uploadDir = process.env.VERCEL ? "/tmp" : path.join(__dirname, "uploads");
+// Use system temp dir on Vercel, and local 'uploads' folder on Windows/Local
+const uploadDir = process.env.VERCEL
+  ? os.tmpdir()
+  : path.join(__dirname, "uploads");
 
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({
