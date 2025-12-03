@@ -31,11 +31,33 @@ function parseLazada(filePath) {
       sku = skuRaw;
     }
 
+    const skuVarian = [sku, warna, size]
+      .filter(Boolean)
+      .join("_")
+      .toLowerCase();
+
+    // Format createTime to remove time component and standardize to DD/MM/YYYY
+    let createDate = "";
+    if (row.createTime) {
+      const dateStr = String(row.createTime);
+      // Try to parse "DD Mon YYYY" or similar formats
+      const dateObj = new Date(dateStr);
+      if (!isNaN(dateObj.getTime())) {
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+        createDate = `${day}/${month}/${year}`;
+      } else {
+        // Fallback: just take the first part if parsing fails
+        createDate = dateStr.split(" ")[0];
+      }
+    }
+
     return {
       tracking_number: row.trackingCode,
       no_pesanan: row.orderNumber,
-      pesanan_dibuat: row.createTime,
-      skuVarian: `${sku}_${warna}_${size}`,
+      pesanan_dibuat: createDate,
+      skuVarian: skuVarian,
       sku: sku,
       warna: warna,
       size: size,
