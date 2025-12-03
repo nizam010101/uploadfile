@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Parser</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Upload and Parse Sales Report</h1>
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="marketplace">Choose Marketplace:</label>
+          <select id="marketplace" name="marketplace">
+            <option value="shopee">Shopee</option>
+            <option value="lazada">Lazada</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="account">Choose Account:</label>
+          <select id="account" name="account">
+            <option value="arkana">Arkana</option>
+            <option value="askara">Askara</option>
+            <option value="andrian">Andrian</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="fileInput">Choose .xlsx file(s):</label>
+          <input
+            type="file"
+            id="fileInput"
+            name="file"
+            accept=".xlsx"
+            multiple
+            required
+          />
+        </div>
+        <button type="submit">Process File</button>
+      </form>
+      <div id="loading" class="hidden">Processing...</div>
+      <div id="output" class="hidden">
+        <h2>Processed Data</h2>
+        <button id="downloadBtn" style="margin-bottom: 10px">
+          Download Excel
+        </button>
+        <div id="table-container"></div>
+      </div>
+    </div>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
