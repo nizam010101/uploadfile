@@ -12,8 +12,8 @@ const app = express();
 const port = 3000;
 
 // --- Multer Setup for File Uploads ---
-// Use a local 'uploads' directory instead of /tmp for better compatibility (especially on Windows)
-const uploadDir = path.join(__dirname, "uploads");
+// Use /tmp on Vercel (read-only filesystem), and local 'uploads' folder on Windows/Local
+const uploadDir = process.env.VERCEL ? "/tmp" : path.join(__dirname, "uploads");
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
