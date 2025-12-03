@@ -33,9 +33,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // --- Middleware ---
-app.use(express.static("public")); // Serve static files from 'public' directory
+app.use(express.static(path.join(__dirname, "public"))); // Serve static files from 'public' directory
 
 // --- Routes ---
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.post("/upload", upload.array("file"), (req, res) => {
   const marketplace = req.body.marketplace;
   const account = req.body.account;
