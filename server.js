@@ -12,9 +12,10 @@ const app = express();
 const port = 3000;
 
 // --- Multer Setup for File Uploads ---
-const uploadDir = "uploads";
+// Vercel uses /tmp for temporary file storage
+const uploadDir = "/tmp";
 if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+  // fs.mkdirSync(uploadDir); // /tmp usually exists
 }
 
 const storage = multer.diskStorage({
