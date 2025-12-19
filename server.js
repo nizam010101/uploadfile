@@ -34,7 +34,24 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max per file
+    files: 10, // Maximum 10 files at once
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.ms-excel",
+    ];
+    if (allowedMimeTypes.includes(file.mimetype) || file.originalname.endsWith(".xlsx")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Hanya file .xlsx yang diizinkan"), false);
+    }
+  },
+});
 
 // --- Middleware ---
 app.use(express.static(path.join(__dirname, "public"))); // Serve static files from 'public' directory
@@ -80,19 +97,41 @@ app.post("/upload", upload.array("file"), (req, res) => {
       }
     }
 
-    // Add Marketplace and Account to each row
+    // Add Marketplace and Account to each row with correct column order
     if (Array.isArray(allProcessedData)) {
       allProcessedData = allProcessedData.map((item) => ({
+        no_pesanan: item.no_pesanan,
         Marketplace: marketplace,
         Account: account,
-        ...item,
+        tracking_number: item.tracking_number,
+        pesanan_dibuat: item.pesanan_dibuat,
+        skuVarian: item.skuVarian,
+        sku: item.sku,
+        warna: item.warna,
+        size: item.size,
+        jumlah: item.jumlah,
       }));
     }
 
     res.json(allProcessedData);
   } catch (error) {
     console.error("Processing error:", error.message);
-    res.status(500).json({ message: error.message });
+    // Sanitasi error message untuk production
+    const safePatterns = [
+      "Missing required columns",
+      "tidak ditemukan",
+      "kosong",
+      "Format file tidak sesuai",
+      "Invalid marketplace",
+      "Hanya file .xlsx",
+    ];
+    const isSafeMessage = safePatterns.some((pattern) =>
+      error.message.includes(pattern)
+    );
+    const userMessage = isSafeMessage
+      ? error.message
+      : "Terjadi kesalahan saat memproses file. Pastikan format file sesuai.";
+    res.status(500).json({ message: userMessage });
   } finally {
     // Clean up the uploaded files
     filesToClean.forEach((filePath) => {
@@ -114,7 +153,7 @@ if (require.main === module) {
   app.listen(port, () => {
     console.log(
       `Server is running on http://localhost:${port}\n` +
-        `Please open your browser and navigate to this address.`
+      `Please open your browser and navigate to this address.`
     );
   });
 }

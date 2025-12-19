@@ -63,22 +63,28 @@ function parseShopee(filePath) {
           .join("_") // Menggabungkan dengan "_"
           .toLowerCase(); // Mengubah menjadi huruf kecil
 
-        // Format order_creation_date to remove time component and standardize to DD/MM/YYYY
+        // Format order_creation_date to YYYY-MM-DD
         let orderDate = row.order_creation_date;
         if (orderDate) {
           const datePart = String(orderDate).split(" ")[0];
           const parts = datePart.split("-");
-          // If format is YYYY-MM-DD, convert to DD/MM/YYYY
+          // If format is YYYY-MM-DD, keep as is
           if (parts.length === 3 && parts[0].length === 4) {
-            orderDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            orderDate = datePart;
           } else {
-            orderDate = datePart.replace(/-/g, "/");
+            // Try DD/MM/YYYY format
+            const slashParts = datePart.split("/");
+            if (slashParts.length === 3) {
+              orderDate = `${slashParts[2]}-${slashParts[1]}-${slashParts[0]}`;
+            } else {
+              orderDate = datePart.replace(/\//g, "-");
+            }
           }
         }
 
         finalData.push({
-          tracking_number: row.tracking_number,
           no_pesanan: row.order_sn,
+          tracking_number: row.tracking_number,
           pesanan_dibuat: orderDate,
           skuVarian: skuVarian,
           sku: sku,

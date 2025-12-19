@@ -11,7 +11,11 @@ document
     const outputDiv = document.getElementById("output");
     const tableContainer = document.getElementById("table-container");
     const downloadBtn = document.getElementById("downloadBtn");
+    const submitBtn = form.querySelector('button[type="submit"]');
 
+    // Disable submit button during processing
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Processing...";
     loadingDiv.classList.remove("hidden");
     outputDiv.classList.add("hidden");
     downloadBtn.classList.add("hidden"); // Hide button while processing
@@ -36,6 +40,8 @@ document
     } catch (error) {
       alert(`Error: ${error.message}`);
     } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Process File";
       loadingDiv.classList.add("hidden");
     }
   });

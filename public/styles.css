@@ -91,3 +91,22 @@ tr:nth-child(even) {
 .hidden {
   display: none;
 }
+
+.error-message {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+  padding: 12px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background-color: #9ca3af;
+}
+

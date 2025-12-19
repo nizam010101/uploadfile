@@ -77,13 +77,28 @@ function parseTiktok(filePath) {
       .toLowerCase()
       .trim();
 
-    // Format createdTime to remove time component (take only the date part)
-    // Standardize to DD/MM/YYYY (TikTok usually is DD/MM/YYYY already)
-    const createdDate = createdTime ? String(createdTime).split(" ")[0] : "";
+    // Format createdTime to YYYY-MM-DD
+    let createdDate = "";
+    if (createdTime) {
+      const datePart = String(createdTime).split(" ")[0];
+      // Check if already DD/MM/YYYY format - convert to YYYY-MM-DD
+      const slashParts = datePart.split("/");
+      if (slashParts.length === 3) {
+        createdDate = `${slashParts[2]}-${slashParts[1]}-${slashParts[0]}`;
+      } else {
+        // Try YYYY-MM-DD format - keep as is
+        const dashParts = datePart.split("-");
+        if (dashParts.length === 3 && dashParts[0].length === 4) {
+          createdDate = datePart;
+        } else {
+          createdDate = datePart;
+        }
+      }
+    }
 
     return {
-      tracking_number: trackingId,
       no_pesanan: orderId,
+      tracking_number: trackingId,
       pesanan_dibuat: createdDate,
       skuVarian: skuVarian,
       sku: sellerSku,

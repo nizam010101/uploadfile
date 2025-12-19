@@ -10,6 +10,16 @@ function parseLazada(filePath) {
     throw new Error("File kosong atau tidak ada data.");
   }
 
+  // --- VALIDATION STEP ---
+  const requiredColumns = ["trackingCode", "orderNumber", "createTime", "sellerSku"];
+  const actualColumns = Object.keys(data[0]);
+  const missingColumns = requiredColumns.filter(col => !actualColumns.includes(col));
+
+  if (missingColumns.length > 0) {
+    throw new Error(`Error: Format file tidak sesuai. Kolom yang tidak ditemukan untuk Lazada: ${missingColumns.join(", ")}`);
+  }
+  // --- END VALIDATION ---
+
   const filteredData = data.map((row) => {
     // Parsing sellerSku
     // Format: 'BARBIE 533-BIRU TOSCA-UE: 21'
@@ -36,17 +46,16 @@ function parseLazada(filePath) {
       .join("_")
       .toLowerCase();
 
-    // Format createTime to remove time component and standardize to DD/MM/YYYY
+    // Format createTime to YYYY-MM-DD
     let createDate = "";
     if (row.createTime) {
       const dateStr = String(row.createTime);
-      // Try to parse "DD Mon YYYY" or similar formats
       const dateObj = new Date(dateStr);
       if (!isNaN(dateObj.getTime())) {
         const day = String(dateObj.getDate()).padStart(2, "0");
         const month = String(dateObj.getMonth() + 1).padStart(2, "0");
         const year = dateObj.getFullYear();
-        createDate = `${day}/${month}/${year}`;
+        createDate = `${year}-${month}-${day}`;
       } else {
         // Fallback: just take the first part if parsing fails
         createDate = dateStr.split(" ")[0];
@@ -54,8 +63,8 @@ function parseLazada(filePath) {
     }
 
     return {
-      tracking_number: row.trackingCode,
       no_pesanan: row.orderNumber,
+      tracking_number: row.trackingCode,
       pesanan_dibuat: createDate,
       skuVarian: skuVarian,
       sku: sku,
