@@ -44,7 +44,7 @@ function parseTiktok(filePath) {
   // Row 0: Header
   // Row 1: Description (Skip)
   // Row 2+: Data
-  const dataRows = rows.slice(2);
+  const dataRows = rows.slice(1);
 
   // Filter data rows to keep only desired columns and create objects for better table display
   const filteredRows = dataRows.map((row) => {
