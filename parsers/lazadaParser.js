@@ -11,7 +11,7 @@ function parseLazada(filePath) {
   }
 
   // --- VALIDATION STEP ---
-  const requiredColumns = ["trackingCode", "orderNumber", "createTime", "sellerSku"];
+  const requiredColumns = ["trackingCode", "orderNumber", "createTime", "sellerSku", "variation"];
   const actualColumns = Object.keys(data[0]);
   const missingColumns = requiredColumns.filter(col => !actualColumns.includes(col));
 
@@ -21,32 +21,45 @@ function parseLazada(filePath) {
   // --- END VALIDATION ---
 
   const filteredData = data.map((row) => {
-    // Parsing sellerSku
-    // Format: 'BARBIE 533-BIRU TOSCA-UE: 21'
+    // 1. Ambil Data Mentah
     const skuRaw = row.sellerSku || "";
-    const parts = skuRaw.split("-");
+    const variationRaw = row.variation || "";
 
+    // 2. Logika Parsing sellerSku (Ambil SKU & Warna)
+    // Format: "BARBIE 533-BIRU TOSCA"
+    const skuParts = skuRaw.split("-");
+    
     let sku = "";
     let warna = "";
-    let size = "";
 
-    if (parts.length >= 3) {
-      sku = parts[0].trim().toLowerCase();
-      // Ambil kata pertama dari warna (misal: "BIRU TOSCA" -> "biru")
-      // Jika ingin mengambil semuanya ("biru tosca"), hapus .split(" ")[0]
-      warna = parts[1].trim().toLowerCase().split(" ")[0];
-      size = parts[2].replace("UE:", "").trim();
+    if (skuParts.length >= 2) {
+      sku = skuParts[0].trim().toLowerCase();
+      // Ambil bagian kedua sebagai warna
+      warna = skuParts[1].trim().toLowerCase();
     } else {
-      // Fallback jika format tidak sesuai
-      sku = skuRaw;
+      sku = skuRaw; // Fallback jika tidak ada strip
     }
 
+    // 3. Logika Parsing variation (Ambil Size)
+    // Format: "Family Color: Blue, Size: 36" atau "Size : XL"
+    // Logic: Ambil text paling kanan setelah ":"
+    let size = "";
+    if (variationRaw) {
+      const varParts = variationRaw.split(":");
+      if (varParts.length > 0) {
+        // .pop() mengambil elemen terakhir dari array hasil split
+        size = varParts.pop().trim();
+      }
+    }
+
+    // 4. Generate ID Unik (skuVarian)
+    // Gabungan: SKU + Warna + Size
     const skuVarian = [sku, warna, size]
       .filter(Boolean)
       .join("_")
       .toLowerCase();
 
-    // Format createTime to YYYY-MM-DD
+    // 5. Format Tanggal
     let createDate = "";
     if (row.createTime) {
       const dateStr = String(row.createTime);
@@ -57,7 +70,6 @@ function parseLazada(filePath) {
         const year = dateObj.getFullYear();
         createDate = `${year}-${month}-${day}`;
       } else {
-        // Fallback: just take the first part if parsing fails
         createDate = dateStr.split(" ")[0];
       }
     }
@@ -66,10 +78,11 @@ function parseLazada(filePath) {
       no_pesanan: row.orderNumber,
       tracking_number: row.trackingCode,
       pesanan_dibuat: createDate,
-      skuVarian: skuVarian,
-      sku: sku,
-      warna: warna,
-      size: size,
+      skuVarian: skuVarian,   // Contoh: "barbie 533_biru tosca_36"
+      sku: sku,               // Dari sellerSku (kiri)
+      warna: warna,           // Dari sellerSku (kanan)
+      size: size,             // Dari variation (setelah titik dua)
+      variation: variationRaw,// Data asli kolom variation
       jumlah: 1,
     };
   });
